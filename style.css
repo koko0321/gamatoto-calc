@@ -216,27 +216,26 @@ body {
   font-weight: 600;
 }
 
-.time-sentence-info {
+.time-tip-notice {
   margin-top: 14px;
-  background: #0e1526;
-  border: 1px solid #1f2b45;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.65);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.time-sentence-info strong {
-  color: #fff;
+.time-tip-line {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.45;
 }
 
-.dot-sep {
-  color: var(--border-color);
+.time-tip-line.highlight {
+  color: #facc15;
+  font-weight: 600;
 }
 
 /* ================== 2. 가마토토 레벨 ================== */
@@ -695,6 +694,189 @@ body {
   font-weight: 600;
   margin-top: 2px;
 }
+
+/* ================== 에리어별 캣츠아이 기대값 순위표 아코디언 ================== */
+.catseye-ranking-details {
+  background: #0f1524;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.catseye-ranking-details[open] {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.catseye-ranking-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: #141c2e;
+  user-select: none;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  transition: background 0.15s ease;
+  list-style: none;
+}
+
+.catseye-ranking-summary::-webkit-details-marker {
+  display: none;
+}
+
+.catseye-ranking-summary:hover {
+  background: #1a253c;
+}
+
+.catseye-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catseye-summary-badge {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.catseye-summary-toggle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.catseye-ranking-details[open] .catseye-summary-toggle {
+  color: #60a5fa;
+}
+
+.catseye-ranking-content {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #0d121f;
+  animation: fadeIn 0.2s ease;
+}
+
+.ranking-sub-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.catseye-table-scroll {
+  overflow-x: auto;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+}
+
+.catseye-rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.catseye-rank-table th {
+  background: #172033;
+  color: #cbd5e1;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-bottom: 1px solid #28354f;
+}
+
+.catseye-rank-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #182235;
+  color: #cbd5e1;
+}
+
+.catseye-rank-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.catseye-rank-table .row-event {
+  background: rgba(236, 72, 153, 0.06);
+}
+
+.catseye-rank-table .row-event:hover {
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.catseye-rank-table .row-uber {
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.catseye-rank-table .row-uber-top {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+}
+
+.catseye-rank-table .col-rank {
+  font-weight: 800;
+  color: #94a3b8;
+  width: 50px;
+}
+
+.catseye-rank-table .row-event .col-rank {
+  color: #f472b6;
+}
+
+.catseye-rank-table .col-area {
+  color: #fff;
+  font-weight: 600;
+}
+
+.catseye-rank-table .tag-event {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.catseye-rank-table .col-total {
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.catseye-rank-table .col-detail {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.catseye-rank-table .highlight-uber {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.ranking-tip-footer {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  padding: 8px 12px;
+  line-height: 1.45;
+}
+
+.ranking-tip-footer strong {
+  color: #fbbf24;
+}
+
 
 /* ================== 5. 특수 버프 옵션: 신사 이나리 & 초집중 ================== */
 .section-special-buffs {

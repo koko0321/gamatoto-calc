@@ -842,6 +842,17 @@ if (DOM.trialChips) {
   });
 }
 
+// 캣츠아이 순위표 아코디언 토글 텍스트 연동
+const catseyeDetails = document.querySelector('.catseye-ranking-details');
+if (catseyeDetails) {
+  const toggleText = catseyeDetails.querySelector('.catseye-summary-toggle');
+  catseyeDetails.addEventListener('toggle', () => {
+    if (toggleText) {
+      toggleText.textContent = catseyeDetails.open ? '순위표 접기 ▲' : '펼쳐보기 ▼';
+    }
+  });
+}
+
 // 기대값 계산하기 버튼 클릭
 DOM.btnCalculate.addEventListener('click', () => {
   DOM.btnCalculate.style.transform = 'scale(0.97)';
