@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>냥코 대전쟁 - 가마토토 탐험 계산기</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 헤더 -->
+    <header class="main-header">
+      <div class="logo-area">
+        <span class="badge-tag">냥코 대전쟁</span>
+        <h1>가마토토 탐험 계산기</h1>
+        <p class="subtitle">탐험 시간, 레벨, 대원 구성, 에리어를 설정하여 탐험 결과를 시뮬레이션합니다.</p>
+      </div>
+    </header>
+
+    <main class="calculator-grid">
+      <!-- 1. 탐험 시간 -->
+      <section class="card section-time">
+        <div class="section-title">
+          <span class="step-num">1</span>
+          <h2>탐험 시간</h2>
+        </div>
+        <p class="section-desc">탐험 시간을 선택하세요.</p>
+        
+        <div class="time-options" id="timeOptions">
+          <label class="time-radio-label">
+            <input type="radio" name="expeditionTime" value="1">
+            <div class="time-btn">
+              <span class="time-val">1시간</span>
+              <span class="time-unit">잠깐 탐험</span>
+            </div>
+          </label>
+          <label class="time-radio-label">
+            <input type="radio" name="expeditionTime" value="3">
+            <div class="time-btn">
+              <span class="time-val">3시간</span>
+              <span class="time-unit">적당히 탐험</span>
+            </div>
+          </label>
+          <label class="time-radio-label">
+            <input type="radio" name="expeditionTime" value="6" checked>
+            <div class="time-btn">
+              <span class="time-val">6시간</span>
+              <span class="time-unit">천천히 탐험</span>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. 가마토토 레벨 -->
+      <section class="card section-level">
+        <div class="section-title">
+          <span class="step-num">2</span>
+          <h2>가마토토 레벨</h2>
+        </div>
+        <p class="section-desc">가마토토 레벨에 따라 레벨 효과(확률 가산치)가 적용됩니다.</p>
+
+        <div class="level-control-wrapper">
+          <div class="level-display">
+            <span class="level-label">Lv.</span>
+            <input type="number" id="levelInput" min="1" max="130" value="100">
+            <span class="level-max-hint">/ 130</span>
+          </div>
+
+          <div class="level-slider-container">
+            <input type="range" id="levelSlider" min="1" max="130" value="100">
+            <div class="slider-ticks">
+              <span>1</span>
+              <span>30</span>
+              <span>60</span>
+              <span>99</span>
+              <span>100</span>
+              <span>130</span>
+            </div>
+          </div>
+
+          <div class="quick-level-buttons">
+            <button type="button" class="btn-chip" data-level="1">Lv.1</button>
+            <button type="button" class="btn-chip" data-level="30">Lv.30</button>
+            <button type="button" class="btn-chip" data-level="50">Lv.50</button>
+            <button type="button" class="btn-chip" data-level="99">Lv.99</button>
+            <button type="button" class="btn-chip" data-level="100">Lv.100</button>
+            <button type="button" class="btn-chip" data-level="130">Lv.130 (최대)</button>
+          </div>
+
+          <div class="level-effect-badge-box">
+            <div class="effect-item">
+              <span class="eff-label">현재 레벨 효과:</span>
+              <strong class="eff-val" id="levelEffectDisplay">+4.000%</strong>
+            </div>
+            <span class="eff-formula" id="levelEffectFormula">공식: 2% + 0.02% × 100</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 대원 구성 (5종류) -->
+      <section class="card section-helpers">
+        <div class="section-header-row">
+          <div class="section-title">
+            <span class="step-num">3</span>
+            <h2>대원 편성 (최대 10마리)</h2>
+          </div>
+          <div class="helper-total-badge" id="helperTotalBadge">
+            <span class="helper-total-label">총 대원:</span>
+            <span class="helper-count" id="totalHelperCount">0</span>
+            <span class="helper-max">/ 10마리</span>
+          </div>
+        </div>
+        <p class="section-desc">초보자(1), 평범이(2), 숙련가(4), 카리스마(6), 레전드(7) 가중치 합산 (총 10마리 이하)</p>
+
+        <!-- 가중치 및 노란 문장 확률 요약 카드 -->
+        <div class="helper-status-summary">
+          <div class="h-stat-item">
+            <span class="h-stat-label">대원 가중치 합계:</span>
+            <strong class="h-stat-val" id="helperWeightDisplay">0</strong>
+            <span class="h-stat-sub">/ 최대 70</span>
+          </div>
+          <div class="h-stat-divider"></div>
+          <div class="h-stat-item highlight">
+            <span class="h-stat-label">아이템 확률:</span>
+            <strong class="h-stat-val" id="yellowRateDisplay">32.00%</strong>
+            <span class="h-stat-sub" id="yellowRateFormula">32% + (0 × 0.27%)</span>
+          </div>
+        </div>
+
+        <!-- 진행도 프로그레스 바 -->
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="helperProgressBar" style="width: 0%;"></div>
+        </div>
+
+        <div class="helpers-grid five-cols">
+          <!-- 1. 초보자 -->
+          <div class="helper-card white">
+            <div class="helper-avatar-wrap">
+              <img src="images/helper_white.png" class="helper-avatar-img" alt="초보자">
+            </div>
+            <div class="helper-grade-header">
+              <span class="grade-badge white">초보자</span>
+              <span class="grade-weight">+1점</span>
+            </div>
+            <div class="counter-control">
+              <button type="button" class="btn-step btn-minus" data-target="white">-</button>
+              <input type="number" id="countWhite" class="helper-input" min="0" max="10" value="0" readonly>
+              <button type="button" class="btn-step btn-plus" data-target="white">+</button>
+            </div>
+          </div>
+
+          <!-- 2. 평범이 -->
+          <div class="helper-card bronze">
+            <div class="helper-avatar-wrap">
+              <img src="images/helper_bronze.png" class="helper-avatar-img" alt="평범이">
+            </div>
+            <div class="helper-grade-header">
+              <span class="grade-badge bronze">평범이</span>
+              <span class="grade-weight">+2점</span>
+            </div>
+            <div class="counter-control">
+              <button type="button" class="btn-step btn-minus" data-target="bronze">-</button>
+              <input type="number" id="countBronze" class="helper-input" min="0" max="10" value="0" readonly>
+              <button type="button" class="btn-step btn-plus" data-target="bronze">+</button>
+            </div>
+          </div>
+
+          <!-- 3. 숙련가 -->
+          <div class="helper-card silver">
+            <div class="helper-avatar-wrap">
+              <img src="images/helper_silver.png" class="helper-avatar-img" alt="숙련가">
+            </div>
+            <div class="helper-grade-header">
+              <span class="grade-badge silver">숙련가</span>
+              <span class="grade-weight">+4점</span>
+            </div>
+            <div class="counter-control">
+              <button type="button" class="btn-step btn-minus" data-target="silver">-</button>
+              <input type="number" id="countSilver" class="helper-input" min="0" max="10" value="0" readonly>
+              <button type="button" class="btn-step btn-plus" data-target="silver">+</button>
+            </div>
+          </div>
+
+          <!-- 4. 카리스마 -->
+          <div class="helper-card gold">
+            <div class="helper-avatar-wrap">
+              <img src="images/helper_gold.png" class="helper-avatar-img" alt="카리스마">
+            </div>
+            <div class="helper-grade-header">
+              <span class="grade-badge gold">카리스마</span>
+              <span class="grade-weight">+6점</span>
+            </div>
+            <div class="counter-control">
+              <button type="button" class="btn-step btn-minus" data-target="gold">-</button>
+              <input type="number" id="countGold" class="helper-input" min="0" max="10" value="0" readonly>
+              <button type="button" class="btn-step btn-plus" data-target="gold">+</button>
+            </div>
+          </div>
+
+          <!-- 5. 레전드 -->
+          <div class="helper-card legend">
+            <div class="helper-avatar-wrap">
+              <img src="images/helper_legend.png" class="helper-avatar-img" alt="레전드">
+            </div>
+            <div class="helper-grade-header">
+              <span class="grade-badge legend">레전드</span>
+              <span class="grade-weight">+7점</span>
+            </div>
+            <div class="counter-control">
+              <button type="button" class="btn-step btn-minus" data-target="legend">-</button>
+              <input type="number" id="countLegend" class="helper-input" min="0" max="10" value="0" readonly>
+              <button type="button" class="btn-step btn-plus" data-target="legend">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="helper-presets">
+          <span class="preset-label">빠른 설정:</span>
+          <button type="button" class="btn-chip" id="presetClear">초기화</button>
+          <button type="button" class="btn-chip" id="presetLegend10">올 레전드 (10마리 / 가중치 70)</button>
+        </div>
+
+      </section>
+
+      <!-- 4. 에리어 선택 -->
+      <section class="card section-area">
+        <div class="section-title">
+          <span class="step-num">4</span>
+          <h2>탐험 에리어</h2>
+        </div>
+        <p class="section-desc">탐험할 지역을 선택하세요 (에리어별 드롭 아이템 및 고유 확률 적용).</p>
+
+        <div class="area-selector-wrapper">
+          <div class="select-container">
+            <select id="areaSelect" class="area-select">
+              <optgroup label="상시 탐험 에리어">
+                <option value="평화 초원" selected>평화 초원 (스피드업)</option>
+                <option value="쿵후 왕국">쿵후 왕국 (야옹컴, 스피드업)</option>
+                <option value="사바의 사막">사바의 사막 (야옹컴, 고양이 도령, 스냥이퍼)</option>
+                <option value="고양이 공선">고양이 공선 (스피드업, 스냥이퍼, 고양이 박사)</option>
+                <option value="바람의 습지대">바람의 습지대 (스피드업, 고양이 도령, 트레저 레이더)</option>
+                <option value="엘도라도">엘도라도 (EX 캣아)</option>
+                <option value="독수리 평원">독수리 평원 (레어 캣아)</option>
+                <option value="해저화산">해저화산 (슈레 캣아)</option>
+                <option value="파라보라 산맥">파라보라 산맥 (울슈레 캣아)</option>
+                <option value="평화태평양">평화태평양 (EX 캣아, 레어 캣아)</option>
+                <option value="코타츠 대설지대">코타츠 대설지대 (슈레 캣아, 울슈레 캣아)</option>
+                <option value="메가 뱅크">메가 뱅크 (레어 캣아, 슈레 캣아)</option>
+                <option value="정부의 극비 시설">정부의 극비 시설 (EX 캣아, 울슈레 캣아)</option>
+                <option value="딸랑딸랑 종유동">딸랑딸랑 종유동 (EX 캣아, 슈레 캣아)</option>
+                <option value="개운산">개운산 (레어 캣아, 울슈레 캣아)</option>
+              </optgroup>
+              <optgroup label="이벤트 / 스페셜 에리어">
+                <option value="고양이 눈 동굴">고양이 눈 동굴 (캣츠아이 4종)</option>
+                <option value="울트라 고양이 눈 동굴">울트라 고양이 눈 동굴 (캣츠아이 4종)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="selected-area-preview" id="areaPreviewCard">
+            <div class="area-details">
+              <span class="area-tag" id="areaTypeTag">상시 에리어</span>
+              <strong class="area-name-display" id="areaNameDisplay">평화 초원</strong>
+              <div class="area-drop-summary">
+                <span class="drop-summary-label">드롭 아이템:</span>
+                <span class="drop-summary-items" id="areaDropItemsList">XP, 통조림, 스피드업</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. 특수 옵션: 신사 이나리 & 초집중 -->
+      <section class="card section-special-buffs">
+        <div class="special-buffs-header">
+          <div class="title-with-desc">
+            <h2 class="section-title">
+              <span>특수 탐험 버프 (신사 이나리 & 초집중)</span>
+            </h2>
+            <p class="section-desc">
+              ※ 둘 다 활성화 시 <strong>[이나리 2배] 먼저 적용 후 [초집중 +1개]가 순차 적용</strong>됩니다. <span class="formula-quote-inline">(기본 × 2) + 1</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="special-buffs-grid">
+          <!-- 1. 신사 이나리 동행 -->
+          <div class="buff-card inari-card" id="buffCardInari">
+            <div class="buff-left">
+              <div class="buff-avatar-wrap">
+                <img src="images/inari.png" class="buff-avatar-img" alt="신사 이나리">
+              </div>
+              <div class="buff-info">
+                <div class="buff-badge-row">
+                  <span class="badge-buff inari">신사 이나리</span>
+                  <span class="badge-rec inari">6시간 탐험 추천</span>
+                  <span class="buff-status-chip" id="inariStatusText">미적용 (1배)</span>
+                </div>
+                <h3>신사 이나리 동행</h3>
+                <p class="buff-desc">
+                  배틀 아이템 & 캣츠아이 <strong>획득량 2배 (×2)</strong><br>
+                  <span class="buff-rec-hint inari">6시간 탐험 추천</span> · <span class="buff-sub-note">XP/통조림 제외</span>
+                </p>
+              </div>
+            </div>
+            <div class="buff-switch-wrapper">
+              <label class="toggle-switch">
+                <input type="checkbox" id="inariToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 2. 초집중 -->
+          <div class="buff-card focus-card" id="buffCardFocus">
+            <div class="buff-left">
+              <div class="buff-icon-wrap focus">🔥</div>
+              <div class="buff-info">
+                <div class="buff-badge-row">
+                  <span class="badge-buff focus">초집중 모드</span>
+                  <span class="badge-rec focus">1시간 탐험 추천</span>
+                  <span class="buff-status-chip" id="focusStatusText">미적용 (+0개)</span>
+                </div>
+                <h3>초집중</h3>
+                <p class="buff-desc">
+                  배틀아이템 & 캣츠아이 <strong>+1개 확정 추가</strong><br>
+                  <span class="buff-rec-hint focus">1시간 탐험 추천</span> · <span class="buff-sub-note">0개여도 1개 보장</span>
+                </p>
+              </div>
+            </div>
+            <div class="buff-switch-wrapper">
+              <label class="toggle-switch focus-toggle">
+                <input type="checkbox" id="focusToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 하단 액션 & 결과 영역 -->
+    <section class="card section-action-result">
+      <div class="calc-action-bar">
+        <!-- 시행 횟수 설정 -->
+        <div class="trials-box">
+          <div class="trials-main-row">
+            <span class="trials-title">시행 횟수</span>
+            <div class="trials-counter">
+              <button type="button" class="btn-trial-step" id="btnTrialMinus" aria-label="감소">-</button>
+              <input type="number" id="trialsInput" class="trials-input" min="1" max="10000" value="1">
+              <span class="trials-unit">회</span>
+              <button type="button" class="btn-trial-step" id="btnTrialPlus" aria-label="증가">+</button>
+            </div>
+          </div>
+          <div class="trials-chips">
+            <button type="button" class="btn-trial-chip active" data-trials="1">1회</button>
+            <button type="button" class="btn-trial-chip" data-trials="5">5회</button>
+            <button type="button" class="btn-trial-chip" data-trials="10">10회</button>
+            <button type="button" class="btn-trial-chip" data-trials="30">30회</button>
+            <button type="button" class="btn-trial-chip" data-trials="100">100회</button>
+          </div>
+        </div>
+
+        <!-- 계산하기 버튼 -->
+        <button type="button" id="btnCalculate" class="btn-calculate">
+          <span>탐험 기대값 계산하기</span>
+        </button>
+      </div>
+
+      <!-- 2. 계산 결과 영역 (버튼 클릭 시 노출) -->
+      <div class="results-container hidden" id="resultsContainer">
+
+        <!-- 선택된 설정 요약 배너 -->
+        <div class="summary-bar" id="summaryBar">
+          <div class="summary-item">
+            <span class="sum-title">탐험 시간</span>
+            <strong class="sum-val" id="sumTime">6시간</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">가마토토 레벨</span>
+            <strong class="sum-val" id="sumLevel">Lv.100</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">대원 편성</span>
+            <strong class="sum-val" id="sumHelpers">0마리</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">선택 에리어</span>
+            <strong class="sum-val" id="sumArea">평화 초원</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">시행 횟수</span>
+            <strong class="sum-val" id="sumTrials">1회</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">이나리</span>
+            <strong class="sum-val" id="sumInari">OFF</strong>
+          </div>
+          <div class="summary-item">
+            <span class="sum-title">초집중</span>
+            <strong class="sum-val" id="sumFocus">OFF</strong>
+          </div>
+        </div>
+
+      <!-- 결과 리포트 박스 -->
+      <div class="result-placeholder-box">
+        <div class="placeholder-header">
+          <h3 id="resultTitleDisplay">1회 탐험 최종 기대 보상</h3>
+        </div>
+
+        <!-- 드롭 아이템 그리드 (해당 에리어에서 드롭되는 아이템만 표시, 없는 종류는 숨김) -->
+        <div class="items-result-grid" id="itemsResultGrid">
+          <!-- 1. XP -->
+          <div class="item-calc-card item-xp" id="card-xp">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/xp.png" class="item-icon-img" alt="XP">
+                <strong class="item-title">XP</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-xp">약 0 XP</strong>
+              </div>
+              <div class="prob-sub-row special-boost" id="xpBonusRow">
+                <span>통조림 전환 보너스: <strong id="xpBonusDisplay">+0.00%</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 통조림 -->
+          <div class="item-calc-card item-can" id="card-can">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/can.png" class="item-icon-img" alt="통조림">
+                <strong class="item-title">통조림</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-can">약 0.00개</strong>
+              </div>
+              <div class="prob-sub-row">
+                <span id="canLimitNote">※ 성공률 32% 고정 / 최대 9개 상한</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 스피드업 -->
+          <div class="item-calc-card" id="card-speed">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/speed.png" class="item-icon-img" alt="스피드업">
+                <strong class="item-title">스피드업</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-speed">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-speed"></div>
+            </div>
+          </div>
+
+          <!-- 4. 야옹컴 -->
+          <div class="item-calc-card" id="card-cpu">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/cpu.png" class="item-icon-img" alt="야옹컴">
+                <strong class="item-title">야옹컴</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-cpu">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-cpu"></div>
+            </div>
+          </div>
+
+          <!-- 5. 고양이 도령 -->
+          <div class="item-calc-card" id="card-worker">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/worker.png" class="item-icon-img" alt="고양이 도령">
+                <strong class="item-title">고양이 도령</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-worker">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-worker"></div>
+            </div>
+          </div>
+
+          <!-- 6. 스냥이퍼 -->
+          <div class="item-calc-card" id="card-sniper">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/sniper.png" class="item-icon-img" alt="스냥이퍼">
+                <strong class="item-title">스냥이퍼</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-sniper">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-sniper"></div>
+            </div>
+          </div>
+
+          <!-- 7. 고양이 박사 -->
+          <div class="item-calc-card" id="card-doctor">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/doctor.png" class="item-icon-img" alt="고양이 박사">
+                <strong class="item-title">고양이 박사</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-doctor">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-doctor"></div>
+            </div>
+          </div>
+
+          <!-- 8. 트레저 레이더 -->
+          <div class="item-calc-card" id="card-radar">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/radar.png" class="item-icon-img" alt="트레저 레이더">
+                <strong class="item-title">트레저 레이더</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-radar">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-radar"></div>
+            </div>
+          </div>
+
+          <!-- 9. EX 캣츠아이 -->
+          <div class="item-calc-card item-catseye" id="card-catseye_ex">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/catseye_ex.png" class="item-icon-img" alt="EX 캣츠아이">
+                <strong class="item-title">EX 캣츠아이</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-catseye_ex">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-catseye_ex"></div>
+            </div>
+          </div>
+
+          <!-- 10. 레어 캣츠아이 -->
+          <div class="item-calc-card item-catseye" id="card-catseye_rare">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/catseye_rare.png" class="item-icon-img" alt="레어 캣츠아이">
+                <strong class="item-title">레어 캣츠아이</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-catseye_rare">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-catseye_rare"></div>
+            </div>
+          </div>
+
+          <!-- 11. 슈퍼레어 캣츠아이 -->
+          <div class="item-calc-card item-catseye" id="card-catseye_sr">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/catseye_sr.png" class="item-icon-img" alt="슈퍼레어 캣츠아이">
+                <strong class="item-title">슈퍼레어 캣츠아이</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-catseye_sr">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-catseye_sr"></div>
+            </div>
+          </div>
+
+          <!-- 12. 울트라 슈퍼 레어 캣츠아이 -->
+          <div class="item-calc-card item-catseye" id="card-catseye_uber">
+            <div class="item-head">
+              <div class="item-title-wrap">
+                <img src="images/catseye_uber.png" class="item-icon-img" alt="울트라 슈퍼 레어 캣츠아이">
+                <strong class="item-title">울트라 슈퍼 레어 캣츠아이</strong>
+              </div>
+            </div>
+            <div class="item-body">
+              <div class="prob-row highlight-expect">
+                <span class="p-label">1회 기대 획득량:</span>
+                <strong class="p-expect" id="expect-catseye_uber">0.00개</strong>
+              </div>
+              <div class="prob-sub-row" id="note-catseye_uber"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 개발자/수식 작성자를 위한 데이터 입출력 JSON 뷰어 -->
+        <details class="debug-data-details">
+          <summary>계산 파라미터 및 공식 연동 객체 보기 (JSON)</summary>
+          <pre id="jsonViewer">{ "status": "대기 중" }</pre>
+        </details>
+      </div>
+      <!-- /results-container -->
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="main-footer">
+      <p>냥코 대전쟁 가마토토 탐험 계산 프로그램 (뼈대 프로토타입)</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
