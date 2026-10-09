@@ -229,6 +229,26 @@
           <button type="button" class="btn-chip" id="presetLegend10">올 레전드 (10마리 / 가중치 70)</button>
         </div>
 
+        <!-- 오토토 조수 보유 상태 설정 -->
+        <div class="assistant-setting-box">
+          <div class="assistant-setting-top">
+            <div class="assistant-label-group">
+              <span class="badge-sub">시뮬레이터 옵션</span>
+              <strong>오토토 개발대 조수 상태</strong>
+            </div>
+            <div class="assistant-toggle-buttons">
+              <button type="button" class="btn-assistant-chip" id="btnAssistantUnder5" data-assistant="under5">
+                조수 5명 미만 (0~4명)
+              </button>
+              <button type="button" class="btn-assistant-chip active" id="btnAssistantFull5" data-assistant="full">
+                조수 5명 풀 (추천)
+              </button>
+            </div>
+          </div>
+          <p class="assistant-setting-desc">
+            ※ 조수가 5명 꽉 차있으면 조수 당첨 시 <strong>'실패'로 처리되고 다음 시도로 넘어가므로(리롤)</strong>, 실질 대원 발견률이 <strong>7.63% → 10.29% (+35%)</strong>로 대폭 증가합니다.
+          </p>
+        </div>
       </section>
 
       <!-- 4. 에리어 선택 -->
@@ -258,6 +278,9 @@
                 <option value="정부의 극비 시설">정부의 극비 시설 (EX 캣아, 울슈레 캣아)</option>
                 <option value="딸랑딸랑 종유동">딸랑딸랑 종유동 (EX 캣아, 슈레 캣아)</option>
                 <option value="개운산">개운산 (레어 캣아, 울슈레 캣아)</option>
+              </optgroup>
+              <optgroup label="특수 에리어 (대원 영입 특화 / Lv.88 해금)">
+                <option value="익스플로러 펍">익스플로러 펍 (대원 영입 2배 특화 / XP만 드롭 / 통조림 없음)</option>
               </optgroup>
               <optgroup label="이벤트 / 스페셜 에리어">
                 <option value="고양이 눈 동굴">고양이 눈 동굴 (캣츠아이 4종)</option>
@@ -526,6 +549,10 @@
             <span class="sum-title">초집중</span>
             <strong class="sum-val" id="sumFocus">OFF</strong>
           </div>
+          <div class="summary-item">
+            <span class="sum-title">조수 상태</span>
+            <strong class="sum-val" id="sumAssistant">5명 풀</strong>
+          </div>
         </div>
 
       <!-- 결과 리포트 박스 -->
@@ -744,13 +771,259 @@
             </div>
           </div>
         </div>
-
-        <!-- 개발자/수식 작성자를 위한 데이터 입출력 JSON 뷰어 -->
-        <details class="debug-data-details">
-          <summary>계산 파라미터 및 공식 연동 객체 보기 (JSON)</summary>
-          <pre id="jsonViewer">{ "status": "대기 중" }</pre>
-        </details>
       </div>
+
+      <!-- 대원 & 조수 발견 확률 & 시뮬레이터 카드 -->
+      <div class="card helper-discovery-card" id="helperDiscoveryCard">
+        <div class="discovery-header">
+          <div class="discovery-title-wrap">
+            <div class="discovery-badge-row">
+              <span class="badge-discovery">대원 & 조수 발견 분석</span>
+              <span class="discovery-env-tag" id="discoveryAreaTag">후반부 에리어 (기본 9.0%)</span>
+              <span class="discovery-env-tag" id="discoveryTimeTag">6시간 (9회 시도)</span>
+              <span class="discovery-env-tag highlight" id="discoveryAssistantTag">조수 5명 풀 (리롤 효과 적용)</span>
+            </div>
+            <h3 class="discovery-main-title">대원 및 조수 출현 확률 & 기대 획득량</h3>
+            <p class="discovery-sub-desc">
+              탐험 시간(독립 시도 횟수)과 에리어(초반 7.5% / 후반 9.0%), 조수 보유 상태에 따른 데이터마이닝 공식 기반 1회 탐험 확률 및 <span class="trials-count-label" id="discoveryTrialsSpan">1회</span> 누적 기대치입니다.
+            </p>
+          </div>
+          <div class="discovery-helper-total-pill">
+            <span class="pill-label">대원 총 발견율:</span>
+            <strong class="pill-val" id="discoveryTotalHelperRate">10.29%</strong>
+            <span class="pill-sub" id="discoveryRateCompare">(조수 풀 상태: 대원 확률 +35% UP)</span>
+          </div>
+        </div>
+
+        <!-- 6개 등급 확률 & 기대치 카드 그리드 -->
+        <div class="discovery-rates-grid">
+          <!-- 1. 카리스마 / 레전드 -->
+          <div class="d-card gold">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap">
+                <img src="images/helper_gold.png" class="d-avatar-img" alt="카리스마">
+              </div>
+              <div class="d-info">
+                <strong class="d-name">카리스마 / 레전드</strong>
+                <span class="d-tag">금모자 (최고 등급)</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 출현 확률:</span>
+                <strong class="d-stat-rate gold" id="rate-gold">0.62%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect gold" id="expect-gold">약 0.01마리</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 숙련가 -->
+          <div class="d-card silver">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap">
+                <img src="images/helper_silver.png" class="d-avatar-img" alt="숙련가">
+              </div>
+              <div class="d-info">
+                <strong class="d-name">숙련가</strong>
+                <span class="d-tag">은모자 (+4점)</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 출현 확률:</span>
+                <strong class="d-stat-rate silver" id="rate-silver">1.24%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect silver" id="expect-silver">약 0.01마리</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 평범이 -->
+          <div class="d-card bronze">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap">
+                <img src="images/helper_bronze.png" class="d-avatar-img" alt="평범이">
+              </div>
+              <div class="d-info">
+                <strong class="d-name">평범이</strong>
+                <span class="d-tag">동모자 (+2점)</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 출현 확률:</span>
+                <strong class="d-stat-rate bronze" id="rate-bronze">2.47%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect bronze" id="expect-bronze">약 0.02마리</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 초보자 -->
+          <div class="d-card white">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap">
+                <img src="images/helper_white.png" class="d-avatar-img" alt="초보자">
+              </div>
+              <div class="d-info">
+                <strong class="d-name">초보자</strong>
+                <span class="d-tag">흰모자 (+1점)</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 출현 확률:</span>
+                <strong class="d-stat-rate white" id="rate-white">5.97%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect white" id="expect-white">약 0.06마리</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. 오토토 조수 -->
+          <div class="d-card assistant" id="card-assistant">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap icon-wrap">
+                <span class="assistant-icon">👷</span>
+              </div>
+              <div class="d-info">
+                <strong class="d-name">오토토 조수</strong>
+                <span class="d-tag" id="tag-assistant">성 개발 보조</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 출현 확률:</span>
+                <strong class="d-stat-rate assistant" id="rate-assistant">0.00%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect assistant" id="expect-assistant">0마리</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. 꽝 (미발견) -->
+          <div class="d-card none">
+            <div class="d-card-head">
+              <div class="d-avatar-wrap icon-wrap">
+                <span class="none-icon">💨</span>
+              </div>
+              <div class="d-info">
+                <strong class="d-name">발견 없음 (꽝)</strong>
+                <span class="d-tag">대원/조수 미등장</span>
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="d-stat-row">
+                <span class="d-stat-label">1회 확률:</span>
+                <strong class="d-stat-rate muted" id="rate-none">89.71%</strong>
+              </div>
+              <div class="d-stat-row highlight">
+                <span class="d-stat-label"><span class="trials-label-text">1회</span> 누적 기대치:</span>
+                <strong class="d-stat-expect muted" id="expect-none">약 0.90회</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🎲 가상 탐험 실제 주사위 시뮬레이터 섹션 -->
+        <div class="simulator-interactive-section">
+          <div class="sim-interactive-header">
+            <div class="sim-header-text">
+              <h4>🎲 가상 탐험 실제 뽑기 시뮬레이터 (몬테카를로)</h4>
+              <p>현재 설정된 에리어, 탐험 시간, 조수 상태를 반영하여 <strong id="simTargetTrials">1</strong>회의 탐험 독립 시행 난수를 굴립니다.</p>
+            </div>
+            <div class="sim-btn-group">
+              <button type="button" class="btn-run-simulation" id="btnRunSimulation">
+                <span>🎲 가상 탐험 <strong id="simBtnTrialsCount">1</strong>회 주사위 굴리기</span>
+              </button>
+              <button type="button" class="btn-reset-simulation" id="btnResetSimulation" title="시뮬레이션 결과 초기화">
+                결과 리셋
+              </button>
+            </div>
+          </div>
+
+          <!-- 시뮬레이션 결과 표시 영역 -->
+          <div class="sim-results-output" id="simResultsOutput">
+            <div class="sim-empty-state" id="simEmptyState">
+              <span class="empty-icon">🎲</span>
+              <p>위의 <strong>[가상 탐험 주사위 굴리기]</strong> 버튼을 누르면 실제 탐험 대원 출현 난수를 시뮬레이션하여 획득 결과를 확인할 수 있습니다.</p>
+            </div>
+            <div class="sim-active-results hidden" id="simActiveResults">
+              <div class="sim-summary-banner">
+                <div class="sim-banner-left">
+                  <span class="sim-run-count-badge" id="simTotalRunsBadge">총 1회 가상 탐험 완료</span>
+                  <strong class="sim-highlight-text" id="simResultSummaryText">대원 0마리 발견!</strong>
+                </div>
+                <div class="sim-banner-right">
+                  <span class="sim-luck-badge" id="simLuckBadge">보통</span>
+                </div>
+              </div>
+              <div class="sim-loot-grid">
+                <div class="sim-loot-chip gold" id="simLootGold">
+                  <div class="chip-avatar-row">
+                    <img src="images/helper_gold.png" class="chip-img" alt="카리스마">
+                    <span class="chip-label">카리스마/레전드</span>
+                  </div>
+                  <strong class="chip-val" id="simCountGold">0마리</strong>
+                </div>
+                <div class="sim-loot-chip silver" id="simLootSilver">
+                  <div class="chip-avatar-row">
+                    <img src="images/helper_silver.png" class="chip-img" alt="숙련가">
+                    <span class="chip-label">숙련가</span>
+                  </div>
+                  <strong class="chip-val" id="simCountSilver">0마리</strong>
+                </div>
+                <div class="sim-loot-chip bronze" id="simLootBronze">
+                  <div class="chip-avatar-row">
+                    <img src="images/helper_bronze.png" class="chip-img" alt="평범이">
+                    <span class="chip-label">평범이</span>
+                  </div>
+                  <strong class="chip-val" id="simCountBronze">0마리</strong>
+                </div>
+                <div class="sim-loot-chip white" id="simLootWhite">
+                  <div class="chip-avatar-row">
+                    <img src="images/helper_white.png" class="chip-img" alt="초보자">
+                    <span class="chip-label">초보자</span>
+                  </div>
+                  <strong class="chip-val" id="simCountWhite">0마리</strong>
+                </div>
+                <div class="sim-loot-chip assistant" id="simLootAssistant">
+                  <div class="chip-avatar-row">
+                    <span class="chip-emoji">👷</span>
+                    <span class="chip-label">오토토 조수</span>
+                  </div>
+                  <strong class="chip-val" id="simCountAssistant">0마리</strong>
+                </div>
+                <div class="sim-loot-chip none" id="simLootNone">
+                  <div class="chip-avatar-row">
+                    <span class="chip-emoji">💨</span>
+                    <span class="chip-label">꽝 (미발견)</span>
+                  </div>
+                  <strong class="chip-val" id="simCountNone">1회</strong>
+                </div>
+              </div>
+              <div class="sim-log-scroll" id="simLogContainer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 개발자/수식 작성자를 위한 데이터 입출력 JSON 뷰어 -->
+      <details class="debug-data-details">
+        <summary>계산 파라미터 및 공식 연동 객체 보기 (JSON)</summary>
+        <pre id="jsonViewer">{ "status": "대기 중" }</pre>
+      </details>
       <!-- /results-container -->
       </div>
     </section>

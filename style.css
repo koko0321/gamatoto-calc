@@ -606,6 +606,79 @@ body {
   color: var(--text-muted);
 }
 
+/* 오토토 조수 설정 상자 */
+.assistant-setting-box {
+  margin-top: 14px;
+  background: #0d1424;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assistant-setting-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.assistant-label-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assistant-label-group strong {
+  font-size: 0.92rem;
+  color: #f1f5f9;
+}
+
+.assistant-toggle-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-assistant-chip {
+  background: #141c2e;
+  border: 1px solid #283756;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-assistant-chip:hover {
+  background: #1d2842;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.btn-assistant-chip.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.6);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+.assistant-setting-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.assistant-setting-desc strong {
+  color: #fbbf24;
+}
 
 /* ================== 4. 에리어 선택 ================== */
 .area-selector-wrapper {
@@ -676,6 +749,10 @@ body {
 
 .area-tag.event {
   color: #ec4899;
+}
+
+.area-tag.special {
+  color: #fbbf24;
 }
 
 .area-name-display {
@@ -1365,7 +1442,7 @@ body {
 
 .summary-bar {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
   background: #0d121f;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -1655,6 +1732,544 @@ body {
   font-size: 0.85rem;
 }
 
+/* ================== 대원 & 조수 발견 분석 및 시뮬레이터 ================== */
+.helper-discovery-card {
+  background: #0a0e18;
+  border: 1px solid #23314d;
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fadeIn 0.3s ease;
+}
+
+.discovery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.discovery-title-wrap {
+  flex: 1;
+  min-width: 280px;
+}
+
+.discovery-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.badge-discovery {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.discovery-env-tag {
+  background: #141c2e;
+  border: 1px solid #253350;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.discovery-env-tag.highlight {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.discovery-env-tag.jackpot {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.55);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.discovery-main-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 2px 0 6px 0;
+}
+
+.discovery-sub-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.discovery-helper-total-pill {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(168, 85, 247, 0.12));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pill-label {
+  font-size: 0.75rem;
+  color: #c084fc;
+  font-weight: 600;
+}
+
+.pill-val {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #38bdf8;
+  line-height: 1.2;
+}
+
+.pill-sub {
+  font-size: 0.72rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* 6개 등급 카드 그리드 */
+.discovery-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.d-card {
+  background: #111728;
+  border: 1px solid #1f2b45;
+  border-radius: 8px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.d-card:hover {
+  transform: translateY(-2px);
+  border-color: #3b507d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.d-card.gold {
+  border-top: 3px solid #fbbf24;
+}
+
+.d-card.gold:hover {
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+  border-color: #fbbf24;
+}
+
+.d-card.silver {
+  border-top: 3px solid #cbd5e1;
+}
+
+.d-card.bronze {
+  border-top: 3px solid #ea9648;
+}
+
+.d-card.white {
+  border-top: 3px solid #94a3b8;
+}
+
+.d-card.assistant {
+  border-top: 3px solid #38bdf8;
+}
+
+.d-card.none {
+  border-top: 3px solid #475569;
+  opacity: 0.85;
+}
+
+.d-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.d-avatar-wrap {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.d-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+.d-avatar-wrap.icon-wrap {
+  border-radius: 6px;
+  background: #192338;
+}
+
+.assistant-icon, .none-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.d-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.d-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.d-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.d-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.d-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+}
+
+.d-stat-label {
+  color: var(--text-muted);
+}
+
+.d-stat-rate {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.d-stat-rate.gold { color: #fbbf24; }
+.d-stat-rate.silver { color: #cbd5e1; }
+.d-stat-rate.bronze { color: #ea9648; }
+.d-stat-rate.white { color: #f8fafc; }
+.d-stat-rate.assistant { color: #38bdf8; }
+.d-stat-rate.muted { color: #64748b; }
+
+.d-stat-row.highlight {
+  background: rgba(59, 130, 246, 0.08);
+  padding: 4px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.d-stat-expect {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #4ade80;
+}
+
+.d-stat-expect.gold { color: #fbbf24; }
+.d-stat-expect.silver { color: #cbd5e1; }
+.d-stat-expect.bronze { color: #ea9648; }
+.d-stat-expect.white { color: #f8fafc; }
+.d-stat-expect.assistant { color: #38bdf8; }
+.d-stat-expect.muted { color: #94a3b8; }
+
+/* 🎲 가상 탐험 실제 주사위 시뮬레이터 섹션 */
+.simulator-interactive-section {
+  background: #0d1322;
+  border: 1px solid #1e2c47;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sim-interactive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sim-header-text h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 3px 0;
+}
+
+.sim-header-text p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sim-header-text strong {
+  color: #fbbf24;
+}
+
+.sim-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-run-simulation {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-run-simulation:hover {
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.5);
+}
+
+.btn-run-simulation:active {
+  transform: scale(0.96);
+}
+
+.btn-reset-simulation {
+  background: #172033;
+  color: var(--text-muted);
+  border: 1px solid #283756;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-reset-simulation:hover {
+  color: #fff;
+  border-color: #475569;
+}
+
+.sim-results-output {
+  min-height: 80px;
+}
+
+.sim-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #090e18;
+  border: 1px dashed #22304d;
+  border-radius: 6px;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.sim-empty-state .empty-icon {
+  font-size: 1.5rem;
+}
+
+.sim-empty-state strong {
+  color: #c084fc;
+}
+
+.sim-active-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.25s ease;
+}
+
+.sim-active-results.hidden {
+  display: none !important;
+}
+
+.sim-summary-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sim-run-count-badge {
+  background: #1e1b4b;
+  color: #a5b4fc;
+  border: 1px solid #3730a3;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.sim-highlight-text {
+  font-size: 0.98rem;
+  color: #fff;
+}
+
+.sim-luck-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.sim-luck-badge.jackpot {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.sim-luck-badge.unlucky {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.sim-loot-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.sim-loot-chip {
+  background: #111728;
+  border: 1px solid #202b43;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-loot-chip.gold { border-color: rgba(245, 158, 11, 0.4); }
+.sim-loot-chip.silver { border-color: rgba(203, 213, 225, 0.3); }
+.sim-loot-chip.bronze { border-color: rgba(234, 150, 72, 0.3); }
+.sim-loot-chip.white { border-color: rgba(148, 163, 184, 0.3); }
+.sim-loot-chip.assistant { border-color: rgba(56, 189, 248, 0.3); }
+.sim-loot-chip.none { border-color: rgba(71, 85, 105, 0.3); }
+
+.chip-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.chip-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.chip-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.sim-loot-chip.gold .chip-val { color: #fbbf24; }
+.sim-loot-chip.silver .chip-val { color: #cbd5e1; }
+.sim-loot-chip.bronze .chip-val { color: #ea9648; }
+.sim-loot-chip.assistant .chip-val { color: #38bdf8; }
+.sim-loot-chip.none .chip-val { color: #94a3b8; }
+
+.sim-log-scroll {
+  max-height: 140px;
+  overflow-y: auto;
+  background: #090e18;
+  border: 1px solid #1a253a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-log-scroll:empty {
+  display: none;
+}
+
+.sim-log-entry {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.sim-log-entry strong {
+  color: #38bdf8;
+}
+
+.sim-log-entry.gold strong {
+  color: #fbbf24;
+}
+
 /* ================== 푸터 ================== */
 .main-footer {
   text-align: center;
@@ -1686,6 +2301,14 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .discovery-rates-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .sim-loot-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .special-buffs-grid {
     grid-template-columns: 1fr;
   }
@@ -1707,6 +2330,23 @@ body {
 
   .items-result-grid {
     grid-template-columns: 1fr;
+  }
+
+  .discovery-rates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sim-loot-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .assistant-toggle-buttons {
+    width: 100%;
+  }
+
+  .btn-assistant-chip {
+    flex: 1;
+    text-align: center;
   }
 
   .summary-bar {
@@ -1732,3 +2372,4 @@ body {
     align-self: flex-end;
   }
 }
+

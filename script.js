@@ -235,6 +235,14 @@ const AREA_DATABASE = {
       catseye_sr: { base: 5.5, adj: 0.25 },
       catseye_uber: { base: 5.5, adj: 0.25 }
     }
+  },
+  '익스플로러 펍': {
+    type: 'special',
+    xpRange: [1013, 1200],
+    isExplorerPub: true,
+    items: {
+      xp: { base: 100.0, adj: 0.0 }
+    }
   }
 };
 
@@ -252,6 +260,7 @@ const appState = {
     legend: 0   // 레전드
   },
   area: '평화 초원',
+  assistantFull: true, // 오토토 개발대 조수 5명 보유 여부 (기본값: true - 풀 상태)
   inari: false, // 신사 이나리 (배틀아이템 & 캣츠아이 2배)
   focus: false, // 초집중 (배틀아이템 & 캣츠아이 +1개)
   trials: 1,    // 시행 횟수
@@ -293,6 +302,9 @@ const DOM = {
   presetClear: document.getElementById('presetClear'),
   presetLegend10: document.getElementById('presetLegend10'),
 
+  btnAssistantUnder5: document.getElementById('btnAssistantUnder5'),
+  btnAssistantFull5: document.getElementById('btnAssistantFull5'),
+
   areaSelect: document.getElementById('areaSelect'),
   areaNameDisplay: document.getElementById('areaNameDisplay'),
   areaTypeTag: document.getElementById('areaTypeTag'),
@@ -322,6 +334,54 @@ const DOM = {
   sumTrials: document.getElementById('sumTrials'),
   sumInari: document.getElementById('sumInari'),
   sumFocus: document.getElementById('sumFocus'),
+  sumAssistant: document.getElementById('sumAssistant'),
+
+  // 대원 & 조수 발견 리포트 DOM
+  discoveryAreaTag: document.getElementById('discoveryAreaTag'),
+  discoveryTimeTag: document.getElementById('discoveryTimeTag'),
+  discoveryAssistantTag: document.getElementById('discoveryAssistantTag'),
+  discoveryTotalHelperRate: document.getElementById('discoveryTotalHelperRate'),
+  discoveryRateCompare: document.getElementById('discoveryRateCompare'),
+  discoveryTrialsSpan: document.getElementById('discoveryTrialsSpan'),
+
+  rates: {
+    gold: document.getElementById('rate-gold'),
+    silver: document.getElementById('rate-silver'),
+    bronze: document.getElementById('rate-bronze'),
+    white: document.getElementById('rate-white'),
+    assistant: document.getElementById('rate-assistant'),
+    none: document.getElementById('rate-none')
+  },
+  expects: {
+    gold: document.getElementById('expect-gold'),
+    silver: document.getElementById('expect-silver'),
+    bronze: document.getElementById('expect-bronze'),
+    white: document.getElementById('expect-white'),
+    assistant: document.getElementById('expect-assistant'),
+    none: document.getElementById('expect-none')
+  },
+  cardAssistant: document.getElementById('card-assistant'),
+  tagAssistant: document.getElementById('tag-assistant'),
+
+  // 가상 탐험 실제 난수 시뮬레이터 DOM
+  simTargetTrials: document.getElementById('simTargetTrials'),
+  simBtnTrialsCount: document.getElementById('simBtnTrialsCount'),
+  btnRunSimulation: document.getElementById('btnRunSimulation'),
+  btnResetSimulation: document.getElementById('btnResetSimulation'),
+  simEmptyState: document.getElementById('simEmptyState'),
+  simActiveResults: document.getElementById('simActiveResults'),
+  simTotalRunsBadge: document.getElementById('simTotalRunsBadge'),
+  simResultSummaryText: document.getElementById('simResultSummaryText'),
+  simLuckBadge: document.getElementById('simLuckBadge'),
+  simCounts: {
+    gold: document.getElementById('simCountGold'),
+    silver: document.getElementById('simCountSilver'),
+    bronze: document.getElementById('simCountBronze'),
+    white: document.getElementById('simCountWhite'),
+    assistant: document.getElementById('simCountAssistant'),
+    none: document.getElementById('simCountNone')
+  },
+  simLogContainer: document.getElementById('simLogContainer'),
 
   quoteLevelEffect: document.getElementById('quoteLevelEffect'),
   canLimitNote: document.getElementById('canLimitNote'),
@@ -503,8 +563,213 @@ function calculateExpeditionRewards() {
 }
 
 // ==========================================
-// 7. UI 업데이트
+// 6-1. 대원 및 조수 발견 확률 계산 (데이터마이닝 표 6~8 공식)
 // ==========================================
+function calculateHelperDiscoveryRates(time, area, isAssistantFull) {
+  // 초반부 에리어: 평화 초원, 쿵후 왕국, 사바의 사막 (기본 발견율 7.5%)
+  // 익스플로러 펍: 대원 영입 특화 에리어 (기본 발견율 18.0% - 2배 특화!)
+  // 후반부 에리어: 나머지 12개 에리어 및 동굴 (기본 발견율 9.0%)
+  const isExplorerPub = (area === '익스플로러 펍');
+  const isEarlyArea = (area === '평화 초원' || area === '쿵후 왕국' || area === '사바의 사막');
+  const attempts = time === 1 ? 2 : (time === 3 ? 5 : 9);
+  const pFind = isExplorerPub ? 0.180 : (isEarlyArea ? 0.075 : 0.090);
+
+  // 가중치 (표 6 기준, 백분율)
+  const wAssistant = 86.67;
+  const wWhite = isEarlyArea ? 9.73 : 7.73;
+  const wBronze = isEarlyArea ? 2.13 : 3.20;
+  const wSilver = isEarlyArea ? 1.07 : 1.60;
+  const wGold = isEarlyArea ? 0.40 : 0.80;
+  const helperWeightSum = wWhite + wBronze + wSilver + wGold; // 13.33
+
+  let rates = {
+    none: 0,
+    assistant: 0,
+    white: 0,
+    bronze: 0,
+    silver: 0,
+    gold: 0,
+    totalHelper: 0
+  };
+
+  if (!isAssistantFull) {
+    // [표 7] 조수 4마리 이하 (< 5)
+    // N회 시도 중 발견 확률 = 1 - (1 - P_find)^N
+    const pAny = 1 - Math.pow(1 - pFind, attempts);
+    rates.none = Math.pow(1 - pFind, attempts) * 100;
+    rates.assistant = pAny * wAssistant;
+    rates.white = pAny * wWhite;
+    rates.bronze = pAny * wBronze;
+    rates.silver = pAny * wSilver;
+    rates.gold = pAny * wGold;
+    rates.totalHelper = rates.white + rates.bronze + rates.silver + rates.gold;
+  } else {
+    // [표 8] 조수 5마리 시 (풀)
+    // 조수 당첨 시 리롤 (실패 처리 후 다음 시도로 넘어감)
+    // 시도당 대원 획득 확률 P_helper = P_find * (13.33 / 100)
+    const pHelperPerAttempt = pFind * (helperWeightSum / 100);
+    const pHelperAny = 1 - Math.pow(1 - pHelperPerAttempt, attempts);
+    rates.none = Math.pow(1 - pHelperPerAttempt, attempts) * 100;
+    rates.assistant = 0;
+    rates.white = pHelperAny * (wWhite / helperWeightSum) * 100;
+    rates.bronze = pHelperAny * (wBronze / helperWeightSum) * 100;
+    rates.silver = pHelperAny * (wSilver / helperWeightSum) * 100;
+    rates.gold = pHelperAny * (wGold / helperWeightSum) * 100;
+    rates.totalHelper = rates.white + rates.bronze + rates.silver + rates.gold;
+  }
+
+  return {
+    isEarlyArea,
+    isExplorerPub,
+    attempts,
+    pFindPercent: pFind * 100,
+    isAssistantFull,
+    rates
+  };
+}
+
+// ==========================================
+// 6-2. 몬테카를로 가상 탐험 실제 난수 시뮬레이터
+// ==========================================
+function simulateExpeditionRolls(trials, time, area, isAssistantFull) {
+  const isExplorerPub = (area === '익스플로러 펍');
+  const isEarlyArea = (area === '평화 초원' || area === '쿵후 왕국' || area === '사바의 사막');
+  const attempts = time === 1 ? 2 : (time === 3 ? 5 : 9);
+  const pFind = isExplorerPub ? 0.180 : (isEarlyArea ? 0.075 : 0.090);
+
+  const wWhite = isEarlyArea ? 9.73 : 7.73;
+  const wBronze = isEarlyArea ? 2.13 : 3.20;
+  const wSilver = isEarlyArea ? 1.07 : 1.60;
+  const wGold = isEarlyArea ? 0.40 : 0.80;
+
+  const counts = {
+    gold: 0,
+    silver: 0,
+    bronze: 0,
+    white: 0,
+    assistant: 0,
+    none: 0
+  };
+
+  const logs = [];
+
+  for (let t = 1; t <= trials; t++) {
+    let outcome = 'none';
+
+    for (let a = 1; a <= attempts; a++) {
+      if (Math.random() < pFind) {
+        const r = Math.random() * 100;
+        if (r < 86.67) {
+          // 조수 당첨
+          if (isAssistantFull) {
+            // 조수 5명 풀 상태: 리롤 (실패 처리 후 다음 시도로 넘어감)
+            continue;
+          } else {
+            outcome = 'assistant';
+            break;
+          }
+        } else if (r < 86.67 + wWhite) {
+          outcome = 'white';
+          break;
+        } else if (r < 86.67 + wWhite + wBronze) {
+          outcome = 'bronze';
+          break;
+        } else if (r < 86.67 + wWhite + wBronze + wSilver) {
+          outcome = 'silver';
+          break;
+        } else {
+          outcome = 'gold';
+          break;
+        }
+      }
+    }
+
+    counts[outcome]++;
+
+    // 최대 30개까지 대원 발견 로그 기록
+    if (trials <= 50 && outcome !== 'none') {
+      const nameMap = {
+        gold: '카리스마/레전드 (금모자)',
+        silver: '숙련가 (은모자)',
+        bronze: '평범이 (동모자)',
+        white: '초보자 (흰모자)',
+        assistant: '오토토 조수'
+      };
+      logs.push({ trial: t, outcome, name: nameMap[outcome] });
+    }
+  }
+
+  return { counts, logs };
+}
+
+function executeHelperSimulation() {
+  const trials = Math.max(1, appState.trials || 1);
+  const result = simulateExpeditionRolls(trials, appState.time, appState.area, appState.assistantFull);
+  const helperDiscovery = calculateHelperDiscoveryRates(appState.time, appState.area, appState.assistantFull);
+  const expectedTotalHelper = trials * (helperDiscovery.rates.totalHelper / 100);
+  const actualTotalHelper = result.counts.gold + result.counts.silver + result.counts.bronze + result.counts.white;
+
+  if (DOM.simEmptyState) DOM.simEmptyState.classList.add('hidden');
+  if (DOM.simActiveResults) DOM.simActiveResults.classList.remove('hidden');
+
+  if (DOM.simTotalRunsBadge) {
+    DOM.simTotalRunsBadge.textContent = `총 ${trials.toLocaleString()}회 가상 탐험 완료`;
+  }
+
+  if (DOM.simResultSummaryText) {
+    DOM.simResultSummaryText.innerHTML = `대원 총 <strong style="color: #4ade80;">${actualTotalHelper}마리</strong> 영입 성공! <span style="font-size: 0.8rem; color: #94a3b8;">(수학적 기대치: 약 ${expectedTotalHelper.toFixed(2)}마리)</span>`;
+  }
+
+  // 행운 뱃지 판정
+  if (DOM.simLuckBadge) {
+    if (result.counts.gold > 0) {
+      DOM.simLuckBadge.textContent = result.counts.gold >= 2 ? '대박! 금모자 2마리 이상!' : '대박! 카리스마/레전드 획득!';
+      DOM.simLuckBadge.className = 'sim-luck-badge jackpot';
+    } else if (actualTotalHelper >= expectedTotalHelper * 1.25 && trials >= 5) {
+      DOM.simLuckBadge.textContent = '운 좋음 (+대원 풍년)';
+      DOM.simLuckBadge.className = 'sim-luck-badge';
+    } else if (actualTotalHelper < expectedTotalHelper * 0.7 && trials >= 10) {
+      DOM.simLuckBadge.textContent = '다소 아쉬움';
+      DOM.simLuckBadge.className = 'sim-luck-badge unlucky';
+    } else {
+      DOM.simLuckBadge.textContent = '보통 운';
+      DOM.simLuckBadge.className = 'sim-luck-badge';
+    }
+  }
+
+  // 수치 갱신
+  if (DOM.simCounts.gold) DOM.simCounts.gold.textContent = `${result.counts.gold}마리`;
+  if (DOM.simCounts.silver) DOM.simCounts.silver.textContent = `${result.counts.silver}마리`;
+  if (DOM.simCounts.bronze) DOM.simCounts.bronze.textContent = `${result.counts.bronze}마리`;
+  if (DOM.simCounts.white) DOM.simCounts.white.textContent = `${result.counts.white}마리`;
+  if (DOM.simCounts.assistant) DOM.simCounts.assistant.textContent = `${result.counts.assistant}마리`;
+  if (DOM.simCounts.none) DOM.simCounts.none.textContent = `${result.counts.none}회`;
+
+  // 로그 출력
+  if (DOM.simLogContainer) {
+    DOM.simLogContainer.innerHTML = '';
+    if (result.logs.length > 0) {
+      result.logs.forEach(log => {
+        const div = document.createElement('div');
+        div.className = `sim-log-entry ${log.outcome}`;
+        div.innerHTML = `<span>[${log.trial}회차] 대원 발견!</span> <strong>${log.name}</strong>`;
+        DOM.simLogContainer.appendChild(div);
+      });
+    } else if (trials <= 50) {
+      const div = document.createElement('div');
+      div.className = 'sim-log-entry';
+      div.innerHTML = `<span style="color: #64748b;">${trials}회 탐험 동안 새로운 대원을 발견하지 못했습니다.</span>`;
+      DOM.simLogContainer.appendChild(div);
+    }
+  }
+}
+
+function resetHelperSimulation() {
+  if (DOM.simEmptyState) DOM.simEmptyState.classList.remove('hidden');
+  if (DOM.simActiveResults) DOM.simActiveResults.classList.add('hidden');
+  if (DOM.simLogContainer) DOM.simLogContainer.innerHTML = '';
+}
+
 // ==========================================
 // 7. UI 업데이트 (설정 갱신 vs 계산 결과 산출 분리)
 // ==========================================
@@ -568,13 +833,20 @@ function updateSettingsUI() {
   if (areaData.type === 'event') {
     DOM.areaTypeTag.textContent = '이벤트 에리어';
     DOM.areaTypeTag.className = 'area-tag event';
+  } else if (areaData.isExplorerPub || areaData.type === 'special') {
+    DOM.areaTypeTag.textContent = '특수 에리어 (대원 영입 특화)';
+    DOM.areaTypeTag.className = 'area-tag special';
   } else {
     DOM.areaTypeTag.textContent = '상시 에리어';
     DOM.areaTypeTag.className = 'area-tag';
   }
 
   const droppedItemNames = ITEM_DEFS.filter(it => areaData.items[it.key]).map(it => it.name);
-  DOM.areaDropItemsList.textContent = droppedItemNames.join(', ');
+  if (areaData.isExplorerPub) {
+    DOM.areaDropItemsList.textContent = 'XP (통조림 미드롭 / 대원·조수 발견률 18% 2배 특화)';
+  } else {
+    DOM.areaDropItemsList.textContent = droppedItemNames.join(', ');
+  }
 
   // 5. 특수 버프 (신사 이나리 & 초집중) 상태 표시
   if (DOM.buffCardInari) DOM.buffCardInari.classList.toggle('active', appState.inari);
@@ -588,6 +860,17 @@ function updateSettingsUI() {
     DOM.focusStatusText.textContent = appState.focus ? '적용 중 (+1개)' : '미적용 (+0개)';
     DOM.focusStatusText.className = appState.focus ? 'buff-status-chip active' : 'buff-status-chip';
   }
+
+  // 6. 조수 상태 칩 동기화
+  if (DOM.btnAssistantUnder5 && DOM.btnAssistantFull5) {
+    DOM.btnAssistantUnder5.classList.toggle('active', !appState.assistantFull);
+    DOM.btnAssistantFull5.classList.toggle('active', appState.assistantFull);
+  }
+
+  // 7. 시뮬레이터 타겟 횟수 동기화
+  const curTrials = Math.max(1, appState.trials || 1);
+  if (DOM.simTargetTrials) DOM.simTargetTrials.textContent = curTrials.toLocaleString();
+  if (DOM.simBtnTrialsCount) DOM.simBtnTrialsCount.textContent = curTrials.toLocaleString();
 
   // 이미 한 번 계산한 상태에서 설정을 바꿨다면 버튼 강조
   if (appState.hasCalculated && DOM.btnCalculate) {
@@ -621,6 +904,10 @@ function calculateAndDisplayResults() {
   if (DOM.sumFocus) {
     DOM.sumFocus.textContent = appState.focus ? 'ON (+1개)' : 'OFF';
     DOM.sumFocus.style.color = appState.focus ? '#f87171' : '#e2e8f0';
+  }
+  if (DOM.sumAssistant) {
+    DOM.sumAssistant.textContent = appState.assistantFull ? '5명 풀' : '5명 미만';
+    DOM.sumAssistant.style.color = appState.assistantFull ? '#4ade80' : '#38bdf8';
   }
 
   // 결과 타이틀 갱신
@@ -698,6 +985,75 @@ function calculateAndDisplayResults() {
     }
   });
 
+  // 대원 및 조수 출현 확률 & 기대치 갱신
+  const helperDiscovery = calculateHelperDiscoveryRates(appState.time, appState.area, appState.assistantFull);
+  const hRates = helperDiscovery.rates;
+
+  if (DOM.discoveryAreaTag) {
+    if (helperDiscovery.isExplorerPub) {
+      DOM.discoveryAreaTag.textContent = '익스플로러 펍 (기본 18.0% - 대원 특화 2배!)';
+      DOM.discoveryAreaTag.className = 'discovery-env-tag jackpot';
+    } else if (helperDiscovery.isEarlyArea) {
+      DOM.discoveryAreaTag.textContent = '초반부 에리어 (기본 7.5%)';
+      DOM.discoveryAreaTag.className = 'discovery-env-tag';
+    } else {
+      DOM.discoveryAreaTag.textContent = '후반부 에리어 (기본 9.0%)';
+      DOM.discoveryAreaTag.className = 'discovery-env-tag';
+    }
+  }
+  if (DOM.discoveryTimeTag) {
+    DOM.discoveryTimeTag.textContent = `${appState.time}시간 (${helperDiscovery.attempts}회 시도)`;
+  }
+  if (DOM.discoveryAssistantTag) {
+    DOM.discoveryAssistantTag.textContent = appState.assistantFull ? '조수 5명 풀 (리롤 효과 적용)' : '조수 5명 미만 (0~4명)';
+    DOM.discoveryAssistantTag.className = appState.assistantFull ? 'discovery-env-tag highlight' : 'discovery-env-tag';
+  }
+  if (DOM.discoveryTotalHelperRate) {
+    DOM.discoveryTotalHelperRate.textContent = `${hRates.totalHelper.toFixed(2)}%`;
+  }
+  if (DOM.discoveryRateCompare) {
+    DOM.discoveryRateCompare.textContent = appState.assistantFull
+      ? '(조수 풀 상태: 대원 확률 +35% UP)'
+      : '(조수 획득 가능)';
+  }
+  if (DOM.discoveryTrialsSpan) {
+    DOM.discoveryTrialsSpan.textContent = `${trials}회`;
+  }
+
+  // trials count labels in discovery cards
+  document.querySelectorAll('.trials-label-text').forEach(el => {
+    el.textContent = `${trials}회`;
+  });
+
+  // 6개 등급 카드 수치 반영
+  const grades = ['gold', 'silver', 'bronze', 'white', 'assistant', 'none'];
+  grades.forEach(g => {
+    if (DOM.rates[g]) DOM.rates[g].textContent = `${hRates[g].toFixed(2)}%`;
+    if (DOM.expects[g]) {
+      const expCount = (trials * hRates[g] / 100);
+      if (g === 'none') {
+        DOM.expects[g].textContent = `약 ${expCount.toFixed(2)}회`;
+      } else if (g === 'assistant') {
+        DOM.expects[g].textContent = appState.assistantFull ? '0마리 (풀)' : `약 ${expCount.toFixed(2)}마리`;
+      } else {
+        DOM.expects[g].textContent = `약 ${expCount.toFixed(2)}마리`;
+      }
+    }
+  });
+
+  if (DOM.cardAssistant) {
+    if (appState.assistantFull) {
+      DOM.cardAssistant.style.opacity = '0.65';
+      if (DOM.tagAssistant) DOM.tagAssistant.textContent = '5명 보유 (발견 불가)';
+    } else {
+      DOM.cardAssistant.style.opacity = '1';
+      if (DOM.tagAssistant) DOM.tagAssistant.textContent = '성 개발 보조';
+    }
+  }
+
+  if (DOM.simTargetTrials) DOM.simTargetTrials.textContent = trials.toLocaleString();
+  if (DOM.simBtnTrialsCount) DOM.simBtnTrialsCount.textContent = trials.toLocaleString();
+
   // 디버그 JSON 뷰어
   const activeItemsSummary = {};
   for (const k in calcData.items) {
@@ -715,9 +1071,24 @@ function calculateAndDisplayResults() {
       노란문장_성공률: `${(32 + calcData.helperBonusPct).toFixed(2)}%`,
       신사_이나리_2배: appState.inari,
       초집중_1개추가: appState.focus,
+      조수_5명_보유: appState.assistantFull,
       시행_횟수: `${trials}회`,
       에리어: appState.area,
       출현_아이템_수: Object.keys(activeItemsSummary).length
+    },
+    대원_조수_발견_분석: {
+      에리어_유형: helperDiscovery.isExplorerPub ? '익스플로러 펍 (18.0% 2배 특화)' : (helperDiscovery.isEarlyArea ? '초반부 (7.5%)' : '후반부 (9.0%)'),
+      탐험_독립시도: `${helperDiscovery.attempts}회`,
+      조수_리롤_적용: appState.assistantFull,
+      대원_총_발견율: `${hRates.totalHelper.toFixed(2)}%`,
+      등급별_1회_확률: {
+        카리스마_레전드: `${hRates.gold.toFixed(2)}%`,
+        숙련가: `${hRates.silver.toFixed(2)}%`,
+        평범이: `${hRates.bronze.toFixed(2)}%`,
+        초보자: `${hRates.white.toFixed(2)}%`,
+        오토토_조수: `${hRates.assistant.toFixed(2)}%`,
+        꽝_미발견: `${hRates.none.toFixed(2)}%`
+      }
     },
     드롭_아이템_기대값: activeItemsSummary
   }, null, 2);
@@ -850,6 +1221,42 @@ if (catseyeDetails) {
     if (toggleText) {
       toggleText.textContent = catseyeDetails.open ? '순위표 접기 ▲' : '펼쳐보기 ▼';
     }
+  });
+}
+
+// 오토토 조수 상태 토글 이벤트
+if (DOM.btnAssistantUnder5) {
+  DOM.btnAssistantUnder5.addEventListener('click', () => {
+    appState.assistantFull = false;
+    updateSettingsUI();
+    if (appState.hasCalculated) {
+      calculateAndDisplayResults();
+    }
+  });
+}
+
+if (DOM.btnAssistantFull5) {
+  DOM.btnAssistantFull5.addEventListener('click', () => {
+    appState.assistantFull = true;
+    updateSettingsUI();
+    if (appState.hasCalculated) {
+      calculateAndDisplayResults();
+    }
+  });
+}
+
+// 가상 탐험 실제 난수 시뮬레이터 실행 & 리셋 이벤트
+if (DOM.btnRunSimulation) {
+  DOM.btnRunSimulation.addEventListener('click', () => {
+    DOM.btnRunSimulation.style.transform = 'scale(0.96)';
+    setTimeout(() => DOM.btnRunSimulation.style.transform = '', 120);
+    executeHelperSimulation();
+  });
+}
+
+if (DOM.btnResetSimulation) {
+  DOM.btnResetSimulation.addEventListener('click', () => {
+    resetHelperSimulation();
   });
 }
 
